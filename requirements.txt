@@ -1,4 +1,4 @@
 numpy==1.24.3
 pandas==2.1.4
-tensorflow==2.10.0
+tensorflow==2.12.1
 rdkit-pypi==2023.03.1
