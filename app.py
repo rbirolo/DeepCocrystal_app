@@ -33,7 +33,7 @@ predictor_params = {
     "csv_log_path": "./results.csv"
 }
 
-loaded_model = tf.keras.layers.TFSMLayer("DeepCrystal_trained", call_endpoint="serving_default")
+loaded_model = tf.keras.models.load_model("DeepCrystal_trained")
 deep_cocrys = DeepCrystal(**predictor_params)
 deep_cocrys.model = loaded_model
 
