@@ -1,4 +1,5 @@
 tensorflow
+keras=2.*
 pandas
 rdkit
 streamlit
