@@ -53,9 +53,17 @@ def clean_and_filter(smiles_list, length_threshold=80):
     return [c if c is not None and len(segment_smiles(c)) <= length_threshold else None for c in cleaned]
 
 def randomize_smiles(smiles, n=10):
-    return [sme.randomize_smiles(smiles) for _ in range(n)]
+    return [sme.randomize_smiles(smiles, iteration=i) for i in range(n)]
+
+def is_valid_smiles(smiles):
+    try:
+        mol = Chem.MolFromSmiles(smiles)
+        return mol is not None
+    except:
+        return False
 
 # Title and description for the app
+st.set_page_config(page_title="DeepCocrystal", page_icon="💊", layout="wide")
 st.title("DeepCocrystal App")
 st.write("""
 Welcome to DeepCocrystal, a predictive model that will help you select promising coformers for
@@ -63,10 +71,9 @@ your co-crystallization trails.
          
 Through this online interface, you can predict the probability of two molecules co-crystallizing, along with their predictive uncertainty estimated through SMILES randomization — useful for prioritizing your lab experiments.
 
-Simply enter API-Coformer SMILES pairs manually or upload a CSV file!
+You can read more details in our [publication](https://chemrxiv.org/engage/chemrxiv/article-details/66704f0501103d79c56770b2).
 
-You can read more details in our [pubblication](https://chemrxiv.org/engage/chemrxiv/article-details/66704f0501103d79c56770b2).
-
+**✒️ Enter API-Coformer SMILES pairs manually**
 """)
 
 
@@ -83,12 +90,39 @@ with st.form("entry_form"):
     if submitted:
         if not api_input or not cof_input:
             st.warning("Both SMILES must be provided.")
+        elif not is_valid_smiles(api_input) or not is_valid_smiles(cof_input):
+            st.warning("Invalid SMILES entered. Please check the format.")
         else:
             st.session_state.entries.append((api_input, cof_input))
             st.success("Pair added.")
 
 # CSV Upload
-uploaded_file = st.file_uploader("Upload a CSV file with the SMILES of the two molecules in 'API' and 'Coformer' columns.", type="csv")
+st.write('**⬆️ *and/or* Upload a CSV file with the SMILES of the molecular pairs to be predicted**')
+
+load_sample = st.checkbox("If you want to upload an example of data loading, check this box!")
+if load_sample:
+    try:
+        sample_df = pd.read_csv('./data/example.csv')
+        if "API" in sample_df.columns and "Coformer" in sample_df.columns:
+            st.session_state.entries = list(sample_df[["API", "Coformer"]].itertuples(index=False, name=None))
+            st.success("Example loaded")
+        else:
+            st.error("The sample file doesn't contain 'API' and 'Coformer' columns.")
+    except FileNotFoundError:
+        st.error("Sample file 'example.csv' not found.")
+
+
+st.markdown("""
+    **Example CSV format:**<br>
+    The file should have two columns: `API` and `Coformer`, with SMILES strings as values.<br>
+    ```csv
+    API,Coformer
+    CCCc1cc(C(N)=S)ccn1,O=S(=O)(O)CCS(=O)(=O)O
+    O=C(O)c1cc(O)ccc1O,Nc1ncnc2nc[nH]c12
+    ```
+""", unsafe_allow_html=True)
+
+uploaded_file = st.file_uploader("Choose a file", type="csv")
 csv_df = None
 
 if uploaded_file:
@@ -109,11 +143,11 @@ if csv_df is not None:
 
 # Show current list
 if all_entries:
-    st.subheader("SMILES Pairs")
+    st.write("**📍 Data Loaded**")
     df_pairs = pd.DataFrame(all_entries, columns=["API", "Coformer"])
     st.dataframe(df_pairs)
 
-    if st.button("Run Predictions for All"):
+    if st.button("🔮 Run predictions for all the entries"):
         results = []
         for api, cof in all_entries:
             api_cleaned = clean_and_filter([api])[0]
@@ -155,13 +189,12 @@ if all_entries:
                 "Std Dev": f"{std_pred:.4f}"
             })
 
+        st.write("**✔️ DeepCocrystal predictions**")
         st.success("Predictions completed!")
         result_df = pd.DataFrame(results)
         st.dataframe(result_df)
 
-        st.download_button("Download Results as CSV", result_df.to_csv(index=False), file_name="DeepCocrystal_predictions.csv")
+        st.download_button("📄 Download the results as CSV", result_df.to_csv(index=False), file_name="DeepCocrystal_predictions.csv")
 else:
-    st.info("No SMILES pairs yet. Use form or upload a CSV.")
-
-st.write("""Please note that ten different SMILES randomizations are generated for each molecular pair, so you may observe slight variations in the results when rerunning the prediction.""")
+    st.info("No SMILES pairs yet. Use the form or upload a CSV.")
 # %%

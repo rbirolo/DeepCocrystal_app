@@ -3,6 +3,7 @@
 from rdkit import Chem
 import numpy as np
 import threading
+import hashlib
 
 class Iterator(object):
     """Abstract base class for data iterators.
@@ -28,7 +29,7 @@ class Iterator(object):
     def reset(self):
         self.batch_index = 0
 
-    def _flow_index(self, n, batch_size=32, shuffle=False, seed=None):
+    def _flow_index(self, n, batch_size=32, shuffle=False, seed=42):
         # Ensure self.batch_index is 0.
         self.reset()
         while 1:
@@ -57,8 +58,6 @@ class Iterator(object):
 
     def __next__(self, *args, **kwargs):
         return self.next(*args, **kwargs)
-
-
 
 
 class SmilesIterator(Iterator):
@@ -163,14 +162,20 @@ class SmilesEnumerator(object):
         self.charset = "".join(charset.union(set(extra_chars)))
         self.pad = max([len(smile) for smile in smiles]) + extra_pad
         
-    def randomize_smiles(self, smiles):
+    def randomize_smiles(self, smiles, iteration=None):
         """Perform a randomization of a SMILES string
         must be RDKit sanitizable"""
         m = Chem.MolFromSmiles(smiles)
-        ans = list(range(m.GetNumAtoms()))
-        np.random.shuffle(ans)
-        nm = Chem.RenumberAtoms(m,ans)
+        atom_indices = list(range(m.GetNumAtoms()))
+        base = smiles if iteration is None else f"{smiles}_{iteration}"
+        seed = int(hashlib.sha256(base.encode('utf-8')).hexdigest(), 16) % (2**32)
+
+        rng = np.random.default_rng(seed)
+        rng.shuffle(atom_indices)
+
+        nm = Chem.RenumberAtoms(m, atom_indices)
         return Chem.MolToSmiles(nm, canonical=self.canonical, isomericSmiles=self.isomericSmiles)
+   
 
     def transform(self, smiles):
         """Perform an enumeration (randomization) and vectorization of a Numpy array of smiles strings
