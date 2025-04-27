@@ -193,8 +193,7 @@ if all_entries:
         st.success("Predictions completed!")
         result_df = pd.DataFrame(results)
         st.dataframe(result_df)
+        st.download_button("📄 Download the results as CSV", result_df.to_csv(index=False), file_name="DeepCocrystal_predictions.csv")
 else:
     st.info("No SMILES pairs yet. Use the form or upload a CSV.")
-    
-st.download_button("📄 Download the results as CSV", result_df.to_csv(index=False), file_name="DeepCocrystal_predictions.csv")
 # %%
