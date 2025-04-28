@@ -210,7 +210,7 @@ else:
 
 st.write("📖 **Cite DeepCocrystal**")
 st.write("""
-If you use DeepCocrystal in your research or projects, please cite us:
+If DeepCocrystal has been useful for driving your experimental tests, please cite us:
 """)
 
 st.code("""
