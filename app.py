@@ -81,6 +81,9 @@ You can read more details in our [publication](https://chemrxiv.org/engage/chemr
 if 'entries' not in st.session_state:
     st.session_state.entries = []
 
+if 'result_df' not in st.session_state:
+    st.session_state.result_df = None
+
 # Manual entry form
 with st.form("entry_form"):
     api_input = st.text_input("API SMILES:")
@@ -114,7 +117,7 @@ if load_sample:
 
 st.markdown("""
     **Example CSV format:**<br>
-    The file should have two columns: `API` and `Coformer`, with SMILES strings as values.<br>
+    The file should have two columns: `API` and `Coformer`, with SMILES strings (up to 80 tokens) as values.<br>
     ```csv
     API,Coformer
     CCCc1cc(C(N)=S)ccn1,O=S(=O)(O)CCS(=O)(=O)O
@@ -189,11 +192,17 @@ if all_entries:
                 "Std Dev": f"{std_pred:.4f}"
             })
 
-        st.write("**✔️ DeepCocrystal predictions**")
+        st.session_state.result_df = pd.DataFrame(results)
         st.success("Predictions completed!")
-        result_df = pd.DataFrame(results)
-        st.dataframe(result_df)
-        st.download_button("📄 Download the results as CSV", result_df.to_csv(index=False), file_name="DeepCocrystal_predictions.csv")
+
+    if st.session_state.result_df is not None:
+        st.write("**✔️ DeepCocrystal Predictions**")
+        st.dataframe(st.session_state.result_df)
+        st.download_button(
+            "📄 Download results as CSV",
+            st.session_state.result_df.to_csv(index=False),
+            file_name="DeepCocrystal_predictions.csv"
+        )
 else:
     st.info("No SMILES pairs yet. Use the form or upload a CSV.")
 # %%
