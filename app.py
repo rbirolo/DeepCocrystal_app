@@ -205,4 +205,19 @@ if all_entries:
         )
 else:
     st.info("No SMILES pairs yet. Use the form or upload a CSV.")
+
+
+
+st.write("📖 **Cite DeepCocrystal**")
+st.write("""
+If you use DeepCocrystal in your research or projects, please cite us:
+""")
+
+st.code("""
+@article{birolo2024deep,
+  title={Deep Supramolecular Language Processing for Co-crystal Prediction},
+  author={Birolo, Rebecca and {\"O}z{\c{c}}elik, R{\i}za and Aramini, Andrea and Gobetto, Roberto and Chierotti, Michele Remo and Grisoni, Francesca},
+  year={2024}
+}
+""", language='bibtex')
 # %%
