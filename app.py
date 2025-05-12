@@ -67,7 +67,7 @@ st.set_page_config(page_title="DeepCocrystal", page_icon="💊", layout="wide")
 st.title("DeepCocrystal")
 st.write("""
 Welcome to DeepCocrystal, a predictive model that will help you select promising coformers for
-your co-crystallization experiments.
+your co-crystallization screenings.
          
 Through this online interface, you can predict the probability of two molecules co-crystallizing, along with their predictive uncertainty estimated through SMILES randomization — useful for prioritizing your lab experiments.
 
