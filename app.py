@@ -64,10 +64,10 @@ def is_valid_smiles(smiles):
 
 # Title and description for the app
 st.set_page_config(page_title="DeepCocrystal", page_icon="💊", layout="wide")
-st.title("DeepCocrystal App")
+st.title("DeepCocrystal")
 st.write("""
 Welcome to DeepCocrystal, a predictive model that will help you select promising coformers for
-your co-crystallization trails.
+your co-crystallization experiments.
          
 Through this online interface, you can predict the probability of two molecules co-crystallizing, along with their predictive uncertainty estimated through SMILES randomization — useful for prioritizing your lab experiments.
 
